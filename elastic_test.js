@@ -103,14 +103,29 @@ const datas = [
 async function createIndex(indexName, mappingproperties) {
     try {
       
-      const response = await clientES.indices.create({
-        index: indexName,
-        body: {
-            mappings: {
-              properties: mappingproperties
+        const response = await clientES.indices.create({
+            index: indexName,
+            body: {
+              settings: { // 설정 추가
+                analysis: {
+                  tokenizer: {
+                    nori_tokenizer: { // Nori 토크나이저 설정 추가
+                      type: "nori_tokenizer",
+                      decompound_mode: "mixed"
+                    }
+                  },
+                  analyzer: {
+                    nori_analyzer: { // Nori 분석기 설정 추가
+                      tokenizer: "nori_tokenizer"
+                    }
+                  }
+                }
+              },
+              mappings: {
+                properties: mappingproperties
+              }
             }
-          }
-      });
+          });
       
       console.log(`인덱스 ${indexName} 생성 완료`);
       return response;
@@ -174,16 +189,23 @@ async function Search_All_Indexvalue(indexName) {
     // 사용자로부터 입력 받은 인덱스 이름
     const userIndexName = 'tastydance_sausage';
 
+    const mappingProperties = {
+        title: { type: 'text' , analyzer: 'nori_analyzer'},
+        description: { type: 'text' , analyzer: 'nori_analyzer'},
+        logo: { type: 'text' , analyzer: 'nori_analyzer'},
+        link: { type: 'text' , analyzer: 'nori_analyzer'},
+    };
+
     // const delete_index = await deleteIndex(userIndexName);
-    // const results = await createIndex(userIndexName);
+    const results = await createIndex(userIndexName, mappingProperties);
     
-    // const insertPromises = datas.map(async (data) => {
-    //     const insert_response = await insertData(userIndexName, data);
-    //     console.log('데이터 입력 결과:', insert_response);
-    // });
+    const insertPromises = datas.map(async (data) => {
+        const insert_response = await insertData(userIndexName, data);
+        console.log('데이터 입력 결과:', insert_response);
+    });
 
     // 모든 데이터 입력을 기다리기 위해 Promise.all 사용
-    // await Promise.all(insertPromises);
+    await Promise.all(insertPromises);
 
     const result = await Search_All_Indexvalue(userIndexName);
     console.log('test');
