@@ -196,7 +196,7 @@ async function Search_All_Indexvalue(indexName) {
         link: { type: 'text' , analyzer: 'nori_analyzer'},
     };
 
-    // const delete_index = await deleteIndex(userIndexName);
+    const delete_index = await deleteIndex(userIndexName);
     const results = await createIndex(userIndexName, mappingProperties);
     
     const insertPromises = datas.map(async (data) => {
